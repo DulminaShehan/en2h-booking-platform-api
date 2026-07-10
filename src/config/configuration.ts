@@ -14,5 +14,9 @@ export default () => ({
   jwt: {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN ?? '1d',
+    // Separate secret + longer expiry for refresh tokens — see env.validation.ts
+    // for why these aren't shared with the access token's secret/expiry.
+    refreshSecret: process.env.REFRESH_TOKEN_SECRET,
+    refreshExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN ?? '7d',
   },
 });

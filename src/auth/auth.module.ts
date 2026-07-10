@@ -7,6 +7,7 @@ import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
 
 @Module({
   imports: [
@@ -30,8 +31,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  // JwtStrategy must be a provider here so Nest instantiates it (which is what
-  // registers the 'jwt' passport strategy) even though nothing injects it directly.
-  providers: [AuthService, JwtStrategy],
+  // JwtStrategy/RefreshJwtStrategy must be providers here so Nest instantiates them
+  // (which is what registers the 'jwt' and 'jwt-refresh' passport strategies) even
+  // though nothing injects them directly. JwtModule above only configures the
+  // *default* secret/expiry (used for access tokens); AuthService#issueTokens
+  // overrides both per-call when signing the refresh token.
+  providers: [AuthService, JwtStrategy, RefreshJwtStrategy],
 })
 export class AuthModule {}

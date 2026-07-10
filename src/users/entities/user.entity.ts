@@ -19,6 +19,13 @@ export class User {
   @Column({ select: false })
   password: string;
 
+  // Bcrypt hash of the currently-valid refresh token, never the raw token itself —
+  // same rationale as `password`. Null means the user has no active refresh token
+  // (never logged in, or explicitly logged out). Rotated on every successful
+  // refresh so a stolen-then-used refresh token can't be replayed.
+  @Column({ type: 'text', nullable: true, select: false })
+  hashedRefreshToken?: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

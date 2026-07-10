@@ -29,6 +29,16 @@ class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   JWT_EXPIRES_IN: string = '1d';
+
+  // Deliberately a separate secret from JWT_SECRET: a leaked access-token secret
+  // shouldn't also let an attacker mint fresh refresh tokens, and vice versa.
+  @IsString()
+  @IsNotEmpty()
+  REFRESH_TOKEN_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  REFRESH_TOKEN_EXPIRES_IN: string = '7d';
 }
 
 // Runs once at bootstrap via ConfigModule's `validate` hook. Throwing here fails
