@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { STATUS_CODES } from 'node:http';
 
 interface ErrorResponseBody {
   statusCode: number;
@@ -70,14 +71,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return {
           statusCode: status,
           message: message ?? exception.message,
-          error: error ?? HttpStatus[status] ?? 'Error',
+          error: error ?? STATUS_CODES[status] ?? 'Error',
         };
       }
 
       return {
         statusCode: status,
         message: exception.message,
-        error: HttpStatus[status] ?? 'Error',
+        error: STATUS_CODES[status] ?? 'Error',
       };
     }
 
