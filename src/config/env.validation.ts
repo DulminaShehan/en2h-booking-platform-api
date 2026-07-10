@@ -1,0 +1,55 @@
+import { plainToInstance } from 'class-transformer';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumberString,
+  IsString,
+  validateSync,
+} from 'class-validator';
+
+class EnvironmentVariables {
+  @IsIn(['development', 'production', 'test'])
+  NODE_ENV: string = 'development';
+
+  @IsNumberString()
+  PORT: string = '3000';
+
+  @IsString()
+  @IsNotEmpty()
+  DATABASE_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DIRECT_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_EXPIRES_IN: string = '1d';
+}
+
+// Runs once at bootstrap via ConfigModule's `validate` hook. Throwing here fails
+// startup immediately with a readable error instead of the app crashing later
+// on a missing env var the first time it's touched (e.g. mid-request DB connect).
+export function validateEnv(config: Record<string, unknown>) {
+  const validatedConfig = plainToInstance(EnvironmentVariables, config, {
+    enableImplicitConversion: true,
+  });
+
+  const errors = validateSync(validatedConfig, {
+    skipMissingProperties: false,
+  });
+
+  if (errors.length > 0) {
+    throw new Error(
+      `Environment variable validation failed:\n${errors
+        .map((error) => Object.values(error.constraints ?? {}).join(', '))
+        .join('\n')}`,
+    );
+  }
+
+  return validatedConfig;
+}
