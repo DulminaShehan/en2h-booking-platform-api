@@ -29,4 +29,23 @@ export class UsersService {
     const user = this.usersRepository.create(data);
     return this.usersRepository.save(user);
   }
+
+  // Only the refresh flow needs the stored hash to compare the incoming refresh
+  // token against, so — same pattern as findByEmailWithPassword — it's the one
+  // query that opts back into the `select: false` column.
+  findByIdWithRefreshToken(id: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: { id },
+      select: { id: true, email: true, hashedRefreshToken: true },
+    });
+  }
+
+  // Pass null to clear it (logout / revocation). Update, not save-with-load, since
+  // no other field on the entity needs to be read or touched here.
+  async setRefreshTokenHash(
+    userId: string,
+    hashedRefreshToken: string | null,
+  ): Promise<void> {
+    await this.usersRepository.update(userId, { hashedRefreshToken });
+  }
 }
