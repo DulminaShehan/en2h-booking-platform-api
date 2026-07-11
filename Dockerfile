@@ -7,7 +7,14 @@ FROM node:24-slim AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm ci (not npm install) so the container gets the exact lockfile-resolved
+# versions rather than re-resolving. `npm ci`'s strict lockfile match breaks
+# here because an ESLint devDependency (unrs-resolver) declares wasm32-wasi
+# fallback bindings as optional deps whose exact set differs by npm version/
+# platform — a known npm cross-platform-optional-deps quirk, not a real
+# mismatch. `--no-audit` avoids an unrelated network call; the resolution
+# itself is still fully determined by package-lock.json.
+RUN npm install --no-audit --no-fund
 
 COPY . .
 RUN npm run build
@@ -25,7 +32,7 @@ WORKDIR /app
 # the app image; kept simple here since ease of review matters more than image size
 # for this assignment.
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install --no-audit --no-fund
 
 COPY --from=builder /app/dist ./dist
 # Source + tsconfig are needed at runtime only for the migration CLI, not for the
