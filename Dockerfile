@@ -43,6 +43,7 @@ COPY tsconfig.json tsconfig.build.json ./
 ENV NODE_ENV=production
 
 ENV PORT=8080
+ENV HOSTNAME="0.0.0.0"
 
 EXPOSE 8080
 
