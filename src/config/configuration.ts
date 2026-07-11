@@ -10,6 +10,9 @@ export default () => ({
     // Unpooled direct connection — required by TypeORM migrations, which need a
     // session-level connection (DDL + advisory locks don't work reliably through a pooler).
     directUrl: process.env.DIRECT_URL,
+    // 'true' for Neon (default) — TLS is mandatory there. Set DB_SSL=false for a
+    // local/Docker Postgres container, which doesn't support TLS out of the box.
+    ssl: (process.env.DB_SSL ?? 'true') === 'true',
   },
   jwt: {
     secret: process.env.JWT_SECRET,

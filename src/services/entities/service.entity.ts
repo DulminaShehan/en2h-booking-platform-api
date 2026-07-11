@@ -11,7 +11,10 @@ import {
 // node-postgres returns NUMERIC/DECIMAL columns as strings (JS numbers can't losslessly
 // represent arbitrary-precision decimals), so without this every `price` read back from
 // the DB would silently become a string instead of the `number` the entity declares.
-const decimalTransformer: ValueTransformer = {
+// Exported (not just used inline) so it can be unit-tested directly — a mocked
+// TypeORM repository never actually invokes column transformers, so testing it
+// through ServicesService would prove nothing about this logic.
+export const decimalTransformer: ValueTransformer = {
   to: (value?: number) => value,
   from: (value?: string) =>
     value === undefined || value === null ? value : parseFloat(value),
