@@ -22,6 +22,12 @@ class EnvironmentVariables {
   @IsNotEmpty()
   DIRECT_URL: string;
 
+  // Neon (and most managed Postgres) requires TLS; a plain local/Docker Postgres
+  // container doesn't speak TLS at all, so this has to be toggleable per environment
+  // rather than hardcoded — see database.ssl in configuration.ts.
+  @IsIn(['true', 'false'])
+  DB_SSL: string = 'true';
+
   @IsString()
   @IsNotEmpty()
   JWT_SECRET: string;

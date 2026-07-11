@@ -33,7 +33,9 @@ import { UsersModule } from './users/users.module';
         // to match entities, which is unreviewable and unsafe against a shared/prod
         // database. Schema changes go through generated migrations instead.
         synchronize: false,
-        ssl: { rejectUnauthorized: false },
+        ssl: configService.get<boolean>('database.ssl')
+          ? { rejectUnauthorized: false }
+          : false,
       }),
     }),
     AuthModule,

@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking
+      POSTGRES_DB: booking_platform
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Gates the app's startup on Postgres actually being ready to accept
+    # connections, not just the container process existing.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U booking -d booking_platform']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      # Points at the bundled Postgres container (resolved via Docker's internal
+      # DNS by service name), not whatever DATABASE_URL is in your local .env —
+      # this is deliberately NOT read from .env, since that file points at Neon.
+      # No pooler here (this isn't Neon), so DATABASE_URL and DIRECT_URL are the
+      # same connection.
+      DATABASE_URL: postgresql://booking:booking@postgres:5432/booking_platform
+      DIRECT_URL: postgresql://booking:booking@postgres:5432/booking_platform
+      # A plain Postgres container doesn't speak TLS — see DB_SSL in
+      # src/config/configuration.ts.
+      DB_SSL: 'false'
+      # These DO read from a .env file in this directory if present (docker compose
+      # auto-loads it for ${...} substitution), falling back to demo-only values so
+      # `docker compose up` works with zero setup. Override with real secrets via a
+      # .env file for anything beyond local review.
+      JWT_SECRET: ${JWT_SECRET:-docker-demo-jwt-secret-override-me}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-docker-demo-refresh-secret-override-me}
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-15m}
+
+volumes:
+  postgres_data:
