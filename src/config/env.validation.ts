@@ -12,7 +12,7 @@ class EnvironmentVariables {
   NODE_ENV: string = 'development';
 
   @IsNumberString()
-  PORT: string = '3000';
+  PORT: string = '8080';
 
   @IsString()
   @IsNotEmpty()
